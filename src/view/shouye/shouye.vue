@@ -68,9 +68,8 @@
     <el-dialog
           title="当前用户信息"
           :visible.sync="dialog1Visible"
-          width="40%"
-          >
-            <img src="http://127.0.0.1:8090/USER/2019-01-16/" width="150px">
+          width="40%">
+            <img :src="photoUrl" width="150px">
             <el-form  :inline="true" label-width="100px" class="demo-form-inline">
               <el-form-item label="用户名:">{{username}}</el-form-item>
               <el-form-item label="用户ID:">{{userid}}</el-form-item>
@@ -102,6 +101,7 @@
         dialog1Visible: false,
         userid:localStorage.getItem("userid"),
         username:localStorage.getItem("username"),
+        photoUrl: localStorage.getItem("photoUrl"),
         currInfo:{
           userName:'',
           loginName:'',
@@ -191,16 +191,20 @@
 
           }else if(command=="a"){
              //获取一下隐藏域中的用户ID
-             let userid= this.$refs.userinfo_userid.value;
+            let mypage = {}
+            mypage.userId= this.userid;
              //到后台后获取用户的信息
-             this.$axios.post(this.domain.serverpath+"user/getUserInfo",JSON.stringify({userid:userid})).then((response)=>{
-                 //获取用户信息
-                 let userinfo=response.data.result;
-                 //打开用户信息的弹出层
-                 this.$data.dialog1Visible=true;
+             this.$axios.post(this.domain.serverpath+"UserById",mypage).then((response)=>{
+               //获取用户信息
+               /*let userinfo = {}
+               userinfo=response.data.result;
+               this.photoUrl = userinfo.photoUrl;
+               alert(this.photoUrl)*/
+               //打开用户信息的弹出层
+                 this.dialog1Visible = true
                  //填充用户数据
                  this.$data.currInfo=response.data.result
-             })
+             });
 
           }else if(command=="c"){
              this.$router.push({path:"/system"})

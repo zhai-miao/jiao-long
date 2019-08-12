@@ -149,6 +149,7 @@
               localStorage.setItem("username", response.data.result.userName);
               localStorage.setItem("userid", response.data.result.id);
               localStorage.setItem("token", response.data.token);
+              localStorage.setItem("photoUrl", response.data.result.photoUrl);
               window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
               this.$router.push({path:'/view/shouye/shouye'});
 
@@ -280,6 +281,7 @@
 
     },
     mounted(){
+      window.localStorage.clear();
       var _this = this;
       var code = "";
       //从后台获取滑动验证码

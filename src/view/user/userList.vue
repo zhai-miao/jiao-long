@@ -20,6 +20,7 @@
           <el-form-item>
             <el-button type="primary" @click="addUser" style="margin-right: -150px">添加</el-button>
             <el-button type="primary" @click="delAll" style="margin-left: 150px">批删</el-button>
+            <el-button type="primary" @click="downloadExcel" style="margin-left: 150px">数据导出</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -154,34 +155,31 @@
       </div>
       <!--弹出框-->
       <el-dialog title="用户信息" :visible.sync="dialogFormVisible">
-        <el-form :model="form">
+        <el-form :model="form" status-icon :rules="rules" ref="form">
           <el-form-item label="用户ID" :label-width="formLabelWidth">
             <el-input v-model="form.id" autocomplete="off" style="column-width: 200px;"></el-input>
           </el-form-item>
-          <el-form-item label="用户名称" :label-width="formLabelWidth">
+          <el-form-item label="用户名称" prop="userName" :label-width="formLabelWidth">
             <el-input v-model="form.userName" autocomplete="off" style="column-width: 200px;"></el-input>
           </el-form-item>
-          <el-form-item label="用户昵称" :label-width="formLabelWidth">
+          <el-form-item label="用户昵称" prop="loginName" :label-width="formLabelWidth">
             <el-input v-model="form.loginName" autocomplete="off" style="column-width: 200px;"></el-input>
           </el-form-item>
-          <el-form-item label="用户电话" :label-width="formLabelWidth">
-            <el-input v-model="form.tel" autocomplete="off" style="column-width: 200px;"></el-input>
+          <el-form-item label="用户电话" prop="tel" :label-width="formLabelWidth">
+            <el-input v-model.number="form.tel" autocomplete="off" style="column-width: 200px;"></el-input>
           </el-form-item>
 
 
-          <el-form-item v-if="dialogFormVisible02">
-            <el-form :model="form" status-icon :rules="rules" ref="form" label-width="100px" class="demo-ruleForm">
+          <!--<el-form-item v-if="dialogFormVisible02">-->
+            <!--<el-form :model="form" status-icon :rules="rules" ref="form" label-width="100px" class="demo-ruleForm">-->
               <el-form-item label="密码" prop="password">
                 <el-input type="password" v-model="form.password" autocomplete="off"></el-input>
               </el-form-item>
               <el-form-item label="确认密码" prop="checkPass">
                 <el-input type="password" v-model="form.checkPass" autocomplete="off"></el-input>
               </el-form-item>
-              <el-form-item>
-                <el-button @click="resetForm('form')">重置</el-button>
-              </el-form-item>
-            </el-form>
-          </el-form-item>
+            <!--</el-form>-->
+          <!--</el-form-item>-->
 
 
           <el-form-item label="删除状态" :label-width="formLabelWidth">
@@ -244,6 +242,32 @@
             callback();
           }
         };
+        var checkUserName = (rule, value, callback) => {
+          if (!value) {
+            return callback(new Error('输入的只能是汉字和英文'));
+          } else {
+            const reg = /^[\u0391-\uFFE5A-Za-z]+$/
+            console.log(reg.test(value));
+            if (reg.test(value)) {
+              callback();
+            } else {
+              return callback(new Error('请输入正确的名称,输入的只能是汉字和英文...'));
+            }
+          }
+        };
+        var checkPhone = (rule, value, callback) => {
+          if (!value) {
+            return callback(new Error('手机号不能为空'));
+          } else {
+            const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
+            console.log(reg.test(value));
+            if (reg.test(value)) {
+              callback();
+            } else {
+              return callback(new Error('请输入正确的手机号'));
+            }
+          }
+        };
         return {
           headers:{
             token:window.localStorage.getItem("token"),
@@ -296,7 +320,16 @@
             ],
             checkPass: [
               { validator: validatePass2, trigger: 'blur' }
-            ]
+            ],
+            tel: [
+              {validator: checkPhone, trigger: 'blur'}
+            ],
+            userName: [
+              {validator: checkUserName, trigger: 'blur'}
+            ],
+            loginName: [
+              {validator: checkUserName, trigger: 'blur'}
+            ],
           }
         }
       },
@@ -324,7 +357,7 @@
         },
         BindRole(row){
           this.roleName = ""
-          this.uid = row.
+          this.uid = row.id
           this.roleName = row.roleName
         },
         CutRole(uid){
@@ -358,13 +391,15 @@
         },
         updateById(fromData){
           this.form = fromData
+          this.form.checkPass = fromData.password
           this.imageUrl = fromData.photoUrl
           this.dialogFormVisible02 = false,
           this.dialogFormVisible = true
         },
         addUser(){
           this.imageUrl = ''
-          this.form = {id:0,photoUrl:'',password:''}
+          this.form = {id:0,photoUrl:''}
+          //this.resetForm();
           this.dialogFormVisible02 = true,
           this.dialogFormVisible = true
         },
@@ -376,9 +411,9 @@
           this.dialogFormVisible = false
           this.dialogFormVisible02 = false
           this.$axios.post(this.domain.serverpath+url,this.form).then((response)=>{
-            if(response.data == 1){
+            if(response.data.code == 200){
               this.$message({
-                message: '恭喜你,操作成功...',
+                message: response.data.success,
                 type: 'success'
               });
               let mypage = {}
@@ -386,7 +421,7 @@
               mypage.currentPage = 1
               this.getUserList(mypage);
             }else {
-              this.$message.error('对不起,操作失败...');
+              this.$message.error(response.data.success);
               let mypage = {}
               mypage.pageSize = this.pageSize
               mypage.currentPage = 1
@@ -403,15 +438,20 @@
             mypage.currentPage = 1
             this.getUserList(mypage);
           });
-        },/*
-        delAll() {
+        },
+        delAll() {                    //批删
           this.delarr = []
           let length = this.multipleSelection.length;
           for (let i = 0; i < length; i++) {
             this.delarr.push(this.multipleSelection[i].id)
           }
+          this.delarr.unshift("")
+          //因为后台需要对对象中的数组取出来转为字符串格式后再问转为数组形式，但是后果是第一个和最后一个分别带上[,]。所以要加两个空的解决BUG
+          this.delarr.push("")
           alert(this.delarr)
-          this.$axios.post("http://localhost:10010/api/zuul1/userservice/delByIds?ids="+this.delarr).then((response)=>{
+          let mypage = {}
+          mypage.ids = this.delarr
+          this.$axios.post(this.domain.serverpath+"delById",mypage).then((response)=>{
             if(response.data >= 1){
               this.$message({
                 message: '恭喜你,删除成功...',
@@ -431,7 +471,7 @@
           }).catch((error)=>{
             alert("删除操作有误...")
           });
-        },*/
+        },
         delById(id){
           let mypage = {}
           mypage.id = id
@@ -504,9 +544,6 @@
           mypage.currentPage = val
           this.getUserList(mypage);
         },
-        resetForm(formName) {
-          this.$refs[formName].resetFields();
-        },
         handleAvatarSuccess(res, file) {
           this.imageUrl = URL.createObjectURL(file.raw);
         },
@@ -521,7 +558,37 @@
             this.$message.error('上传头像图片大小不能超过 2MB!');
           }
           return isJPG && isLt2M;
-        }
+        },
+        //列表下载
+        downloadExcel() {
+          this.$confirm('确定下载列表文件?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.excelData = this.$data.userData //你要导出的数据list。
+            this.export2Excel()
+          }).catch(() => {
+
+          });
+        },
+        //数据写入excel
+        export2Excel() {
+          var that = this;
+          require.ensure([], () => {
+            const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
+            const tHeader = ['用户姓名','登陆姓名','密码','电话','图片地址']; // 导出的表头名信息
+            const filterVal = ['userName','loginName', 'password', 'tel', 'photoUrl']; // 导出的表头字段名，需要导出表格字段名
+            const list = that.excelData;
+            const data = that.formatJson(filterVal, list);
+
+            export_json_to_excel(tHeader, data, '下载数据excel');// 导出的表格名称，根据需要自己命名
+          })
+        },
+        //格式转换，直接复制即可
+        formatJson(filterVal, jsonData) {
+          return jsonData.map(v => filterVal.map(j => v[j]))
+        },
       }
     }
 </script>

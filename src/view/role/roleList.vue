@@ -227,8 +227,8 @@
               });
               let mypage = {}
               mypage.pageSize = this.pageSize
-              mypage.currentPage = 1
-              this.getUserList(mypage);
+              mypage.currentPage = this.currentPage
+              this.getRoleList(mypage);
             }else {
               this.$message.error('对不起,操作失败...');
               let mypage = {}

@@ -49,6 +49,33 @@ export default {
     var decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
     return decryptedStr.toString();
 
+  },
+  set(key,value){
+    let curTime = new Date().getTime()
+    console.log("存储的时候的时间是:"+curTime+",KEY值是:"+key)
+    let dataObj = {data:value,time:curTime}
+    window.localStorage.setItem(JSON.stringify(key),JSON.stringify(dataObj));
+  },
+  get(key){
+    let data = window.localStorage.getItem(JSON.stringify(key));
+    let dataObj = JSON.parse(data);
+    console.log(dataObj)
+    console.log(dataObj);
+    if ((new Date().getTime() - dataObj.time)>(1000*60*60*24*7)) {
+      //localStorage.removeItem(JSON.stringify(key))
+      console.log('信息已过期');
+    }else{
+      let value = dataObj.data
+      console.log("取出的value值是:"+value)
+      return value;
+    }
+  },
+  clearKey(key){
+    localStorage.removeItem(JSON.stringify(key))  //单独清除key
+  },
+  clearKeys(){
+    window.localStorage.clear();    //localStorage全清
   }
+
 
 }

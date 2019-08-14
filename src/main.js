@@ -25,7 +25,7 @@ axios.defaults.withCredentials=true
 import Cookies from 'js-cookie'
 Vue.prototype.Cookies=Cookies
 
-//AES加密
+//引入工具类
 import utils from '@/js/utils.js'
 Vue.prototype.toAes=utils
 

@@ -32,6 +32,10 @@
           </div>
         </el-form-item>
 
+        <el-form-item>
+          <el-checkbox style="color: darkmagenta" checked>默认七天免登陆</el-checkbox>
+        </el-form-item>
+
 
         <div class="login-btn">
           <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
@@ -144,12 +148,20 @@
               clearInterval(timer)
 
               //跳转到首页界面
-              //将用户ID存入到全局的VUE对象中
+              //将用户ID存入到全局的VUE对象中，目的是实现7天免登陆。时间在utils工具类封装的有
+
+              this.toAes.set("userid",response.data.result.id)   //设置的时间是分钟为单位
+              this.toAes.set("username",response.data.result.userName)
+              this.toAes.set("token",response.data.token)
+              this.toAes.set("photoUrl",response.data.result.photoUrl)
+
               // 存储
               localStorage.setItem("username", response.data.result.userName);
               localStorage.setItem("userid", response.data.result.id);
               localStorage.setItem("token", response.data.token);
               localStorage.setItem("photoUrl", response.data.result.photoUrl);
+
+              /*获取权限*/
               let authmap = {}
               authmap = response.data.result.authmap
               console.log(authmap)
@@ -157,9 +169,14 @@
               for (var key in authmap) {
                 listMap.push(key.substring(23))
               }
+              /*获取权限结束*/
+              /*权限   Localstorage存值开始*/
               console.log(listMap)
               localStorage.setItem("authmap", listMap);
+              this.toAes.set("authmap",listMap);
               window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
+              this.toAes.set("listMenu",response.data.result.listMenuInfo);
+              /*权限   Localstorage存值结束*/
               this.$router.push({path:'/view/shouye/shouye'});
 
             }else if(respo.error!=null){
@@ -290,21 +307,27 @@
 
     },
     mounted(){
+      if(localStorage.getItem("userid") == null){   //如果localStorage为空，那么证明已经做退出登陆，就进登陆页面，如果没有，就免登陆直接进主页面
+        window.localStorage.clear();
+        //this.$router.push('/login');
+        var _this = this;
+        var code = "";
+        //从后台获取滑动验证码
+        //参数 url 访问参数
+        this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
+          code=response.data.result;
+          //向浏览器写一个Cookie
+          document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
+          _this.moveCode(code,_this);
+        }).catch((error)=>{
+
+        })
+      }else{
+        this.$router.push({path:"/datamain"})
+      }
       window.localStorage.clear();
-      var _this = this;
-      var code = "";
-      //从后台获取滑动验证码
-      //参数 url 访问参数
-      this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
-        code=response.data.result;
-        //向浏览器写一个Cookie
-        document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
-        _this.moveCode(code,_this);
-      }).catch((error)=>{
 
-      })
 
-//});
     }
   }
 </script>

@@ -99,8 +99,8 @@
         mycontent:"点击打开菜单",
         dialogVisible: false,
         dialog1Visible: false,
-        userid:localStorage.getItem("userid"),
-        username:localStorage.getItem("username"),
+        userid:this.toAes.get("userid"),
+        username:this.toAes.get("username"),
         photoUrl: localStorage.getItem("photoUrl"),
         currInfo:{
           userName:'',
@@ -218,10 +218,10 @@
         this.$axios.post(this.domain.ssoserverpath+"loginOut",mypage/*{headers:{'token':localStorage.getItem("token")}}*/).then((response)=>{
           if(response.data.code==200){
             alert("退出登陆成功...")
-            localStorage.clear();
+            localStorage.clear();   //全清localStorage
             this.domain.userInfo = {}
             this.domain.token = ""
-            this.$router.push({path:'/'});
+            this.$router.push({path:'/login'});
           }else{
             alert("退出登陆失败...")
           }

@@ -265,9 +265,11 @@
             token:window.localStorage.getItem("token"),
             Cookie:{}
           },
-          userid:localStorage.getItem("userid"),
-          username:localStorage.getItem("username"),
+          /*userid:localStorage.getItem("userid"),
+          username:localStorage.getItem("username"),*/
           authmap:localStorage.getItem("authmap"),
+          userid:this.toAes.get("userid"),
+          username:this.toAes.get("username"),
           userData: [],
           delarr: [],
           multipleSelection: [],
@@ -327,9 +329,12 @@
         }
       },
       mounted(){
+        this.userid = this.toAes.get("userid")
+        this.username = this.toAes.get("username")
         let mypage = {}
         mypage.pageSize = 3
         mypage.currentPage = 1
+        mypage.userId = this.userid
         this.getUserList(mypage);
         this.Cookies.get("");
         this.getRoleList();
@@ -528,6 +533,7 @@
           let mypage = {}
           mypage.pageSize = val
           mypage.currentPage = 1
+          mypage.userId = this.userid
           this.getUserList(mypage);
         },
         handleCurrentChange(val) {
@@ -535,6 +541,7 @@
           let mypage = {}
           mypage.pageSize = this.pageSize
           mypage.currentPage = val
+          mypage.userId = this.userid
           this.getUserList(mypage);
         },
         handleAvatarSuccess(res, file) {

@@ -131,8 +131,8 @@
       name: "roleList",
       data() {
         return {
-          userid:localStorage.getItem("userid"),
-          username:localStorage.getItem("username"),
+          userid:this.toAes.get("userid"),
+          username:this.toAes.get("username"),
           roleData: [],
           multipleSelection: [],
           total: 20,

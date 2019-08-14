@@ -38,7 +38,8 @@
           return{
             isCollapse:true,
             wheight:window.innerHeight,
-            listMenu:JSON.parse(window.sessionStorage.getItem("userInfo")).listMenuInfo
+            //listMenu:JSON.parse(window.sessionStorage.getItem("userInfo")).listMenuInfo
+            listMenu:this.toAes.get("listMenu")
           }
       },
       methods:{
@@ -73,7 +74,8 @@
 
       },
       mounted(){
-        console.log(JSON.parse(window.sessionStorage.getItem("userInfo")))
+        console.log(this.toAes.get("userInfo"))
+        //console.log(JSON.parse(window.sessionStorage.getItem("userInfo")))
           /*this.$axios.post(this.domain.ssoserverpath+"").then((reponse)=>{
               //为data中的listMenu赋值
               this.listMenu=reponse.data.result;

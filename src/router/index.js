@@ -37,8 +37,7 @@ export default new Router({
           path: "/datamain",
           component: datamain,
           children: [
-            {path:'/system',component:system,meta:{require:true}},
-            {path:'/userList',component:userList,meta:{require:true}},
+            {path:'/system',component:system,meta:{require:true}}
           ]
         },
         {path:'/userList',component:userList,name:'userList'},

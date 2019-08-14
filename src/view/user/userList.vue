@@ -18,7 +18,7 @@
             <el-button type="info" @click="onSubmit">查询</el-button>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="addUser" style="margin-right: -150px">添加</el-button>
+            <el-button type="primary" @click="addUser" style="margin-right: -150px" v-if="authmap.includes('addUser')">添加</el-button>
             <el-button type="primary" @click="delAll" style="margin-left: 150px">批删</el-button>
             <el-button type="primary" @click="downloadExcel" style="margin-left: 150px">数据导出</el-button>
           </el-form-item>
@@ -88,11 +88,11 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="删除状态"
+          label="是否有效"
           show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="scope.row.delStatus==1">有效</span>
-            <span v-if="scope.row.delStatus==0">无效</span>
+            <span v-if="scope.row.delStatus==1"><el-button type="success" icon="el-icon-check" circle></el-button></span>
+            <span v-if="scope.row.delStatus==0"><el-button type="danger" icon="el-icon-delete" circle></el-button></span>
           </template>
         </el-table-column>
         <el-table-column
@@ -117,8 +117,8 @@
           width="300"
           show-overflow-tooltip>
           <template slot-scope="scope">
-            <el-button type="warning" @click="updateById(scope.row)">修改</el-button>
-            <el-button type="danger" @click="delById(scope.row.id)">删除</el-button>
+            <el-button type="warning" @click="updateById(scope.row)"  v-if="authmap.includes('updateUser')">修改</el-button>
+            <el-button type="danger" @click="delById(scope.row.id)" v-if="authmap.includes('delById')">删除</el-button>
             <el-popover
               placement="right"
               width="300"
@@ -132,7 +132,7 @@
                   </el-option>
                 </el-select>
                 <el-button type="danger" @click="CutRole(scope.row.id)">切换角色</el-button>
-              <el-button slot="reference" @click="BindRole(scope.row.roleInfo)">角色绑定</el-button>
+              <el-button slot="reference" @click="BindRole(scope.row.roleInfo)" v-if="authmap.includes('CutRole')">角色绑定</el-button>
             </el-popover>
           </template>
         </el-table-column>
@@ -189,14 +189,6 @@
           <el-form-item label="用户性别"  :label-width="formLabelWidth">
             <label><input type="radio" v-model="form.sex" value="1"></input>男</label>
             <label><input type="radio" v-model="form.sex" value="0"></input>女</label>
-          </el-form-item>
-          <el-form-item label="创建时间"  :label-width="formLabelWidth">
-            <el-date-picker
-              v-model="form.createTime"
-              type="date"
-              placeholder="选择日期"
-              :label-width="formLabelWidth">
-            </el-date-picker>
           </el-form-item>
           <el-form-item label="用户头像">
             <el-upload
@@ -275,6 +267,7 @@
           },
           userid:localStorage.getItem("userid"),
           username:localStorage.getItem("username"),
+          authmap:localStorage.getItem("authmap"),
           userData: [],
           delarr: [],
           multipleSelection: [],
@@ -454,7 +447,7 @@
           this.$axios.post(this.domain.serverpath+"delById",mypage).then((response)=>{
             if(response.data >= 1){
               this.$message({
-                message: '恭喜你,删除成功...',
+                message: '恭喜你,删除状态更改成功...',
                 type: 'success'
               });
               let mypage = {}
@@ -462,7 +455,7 @@
               mypage.currentPage = 1
               this.getUserList(mypage);
             }else {
-              this.$message.error('对不起,删除失败...');
+              this.$message.error('对不起,删除状态更改失败...');
               let mypage = {}
               mypage.pageSize = this.pageSize
               mypage.currentPage = 1
@@ -478,7 +471,7 @@
           this.$axios.post(this.domain.serverpath+"delById",mypage).then((response)=>{
             if(response.data == 1){
               this.$message({
-                message: '恭喜你,删除成功...',
+                message: '恭喜你,删除状态更改成功...',
                 type: 'success'
               });
               let mypage = {}
@@ -486,7 +479,7 @@
               mypage.currentPage = 1
               this.getUserList(mypage);
             }else {
-              this.$message.error('对不起,删除失败...');
+              this.$message.error('对不起,删除状态更改失败...');
               let mypage = {}
               mypage.pageSize = this.pageSize
               mypage.currentPage = 1

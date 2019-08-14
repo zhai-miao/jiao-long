@@ -150,6 +150,15 @@
               localStorage.setItem("userid", response.data.result.id);
               localStorage.setItem("token", response.data.token);
               localStorage.setItem("photoUrl", response.data.result.photoUrl);
+              let authmap = {}
+              authmap = response.data.result.authmap
+              console.log(authmap)
+              let listMap = new Array()
+              for (var key in authmap) {
+                listMap.push(key.substring(23))
+              }
+              console.log(listMap)
+              localStorage.setItem("authmap", listMap);
               window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
               this.$router.push({path:'/view/shouye/shouye'});
 

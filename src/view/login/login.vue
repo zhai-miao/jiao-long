@@ -8,45 +8,68 @@
       <div class="ms-title">
         欢迎使用
       </div>
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
-        <el-form-item prop="username">
-          <el-input v-model="ruleForm.username" placeholder="请输入用户名">
-            <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
-          </el-input>
-        </el-form-item>
-        <el-form-item  prop="password">
-          <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
-            <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
-          </el-input>
-        </el-form-item>
+      <el-tabs v-model="activeName" @tab-click="handleClick" :stretch="true">
+        <el-tab-pane label="账号密码登陆" name="first">
+          <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
+            <el-form-item prop="username">
+              <el-input v-model="ruleForm.username" placeholder="请输入用户名">
+                <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item  prop="password">
+              <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+                <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
+              </el-input>
+            </el-form-item>
 
-        <el-form-item prop="code">
-          <div class="form-inline-input">
-            <div class="code-box" id="code-box">
-              <input ref="coderef" type="text" name="code" class="code-input" />
-              <p></p>
-              <span style="color:#909399">
+            <el-form-item prop="code">
+              <div class="form-inline-input">
+                <div class="code-box" id="code-box">
+                  <input ref="coderef" type="text" name="code" class="code-input" />
+                  <p></p>
+                  <span style="color:#909399">
                      拖动验证
                   </span>
+                </div>
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <el-checkbox style="color: darkmagenta" checked>默认七天免登陆</el-checkbox>
+            </el-form-item>
+
+
+            <div class="login-btn">
+              <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
             </div>
-          </div>
-        </el-form-item>
+            <!-- 登录进度 -->
+            <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
+                         :stroke-width="18"
+                         :percentage="percent"
+                         status="success"></el-progress>
 
-        <el-form-item>
-          <el-checkbox style="color: darkmagenta" checked>默认七天免登陆</el-checkbox>
-        </el-form-item>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane label="手机号登陆" name="second">
+          <el-form :model="form" status-icon :rules="rules" ref="form">
+            <el-form-item prop="tel" :label-width="formLabelWidth" style="margin-left: 80px;margin-top: 15px">
+              <el-input v-model.number="form.tel" autocomplete="off" style="column-width: 550px;" placeholder="请输入正确的手机号码"></el-input>
+            </el-form-item>
+            <el-form-item prop="tel" :label-width="formLabelWidth" style="margin-left: 80px;margin-top: -25px">
+              <el-input v-model.number="form.yanZhengMa" autocomplete="off" style="column-width: 550px;" placeholder="请输入6位数字验证码"></el-input>
+              <span v-show="sendAuthCode" class="auth_text auth_text_blue" @click="getPhoneCode">
+              <el-button style="margin-left: 35px;margin-top: -155px">获取验证码</el-button>
+            </span>
+              <span v-show="!sendAuthCode" class="auth_text"> <span class="auth_text_blue" style="color: crimson;font-size: 25px">{{auth_time}} </span> 秒之后重新发送验证码</span>
+            </el-form-item>
+            <div class="login-btn">
+              <el-button type="primary" @click="loginByPhone" style="width: 300px">登录</el-button>
+            </div>
 
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
 
-        <div class="login-btn">
-          <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-        </div>
-        <!-- 登录进度 -->
-        <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
-                     :stroke-width="18"
-                     :percentage="percent"
-                     status="success"></el-progress>
-
-      </el-form>
     </div>
 
 
@@ -58,7 +81,21 @@
   export default {
     name: "login",
     data(){
+      var checkPhone = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('手机号不能为空'));
+        } else {
+          const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
+          console.log(reg.test(value));
+          if (reg.test(value)) {
+            callback();
+          } else {
+            return callback(new Error('请输入正确的手机号'));
+          }
+        }
+      };
       return{
+        activeName: 'first',
         divimg:{//背景图片的使用
           backgroundImage:"url(" + require('../../assets/yun.jpg') + ")",
           backgroundRepeat: "no-repeat",
@@ -75,17 +112,94 @@
           username:'zhangsan',
           password:'123456'
         },
+        sendAuthCode: true,
+        form: {
+          tel: '13027674090',
+          yanZhengMa: '',
+          delivery: false
+        },
+        auth_time: '',
         rules: {
           username: [
             { required: true, message: '请输入用户名', trigger: 'blur' }
           ],
           password: [
             { required: true, message: '请输入密码', trigger: 'blur' }
-          ]
+          ],
+          tel: [
+            {validator: checkPhone, trigger: 'blur'}
+          ],
         }
       }
     },
     methods:{
+      getPhoneCode(){
+        let phoneMap={tel:this.form.tel}
+        this.$axios.post(this.domain.ssoserverpath+"sendPhoneMessage",phoneMap).then((response)=> {
+          this.sendAuthCode = false;
+          //设置倒计时秒
+          this.auth_time = 60;
+          var auth_timetimer = setInterval(()=>{
+            this.auth_time--;
+            if(this.auth_time<=0){
+              this.sendAuthCode = true;
+              clearInterval(auth_timetimer);
+            }
+          }, 1000);
+        }
+      )},
+      loginByPhone(){
+        let phoneMap={tel:this.form.tel,yanZhengMa:this.form.yanZhengMa}
+        this.$axios.post(this.domain.ssoserverpath+"checkedPhoneMessage",phoneMap).then((response)=> {
+          if(response.data.code==200){
+            this.$message({
+              message: response.data.success,
+              type: 'success'
+            });
+            //存储token到vuex中，
+            this.$store.state.token=response.data.token
+            this.$store.state.userInfo=response.data.result
+            window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result))
+            //跳转到首页界面
+            //将用户ID存入到全局的VUE对象中，目的是实现7天免登陆。时间在utils工具类封装的有
+
+            this.toAes.set("userid",response.data.result.id)   //设置的时间是分钟为单位
+            this.toAes.set("username",response.data.result.userName)
+            this.toAes.set("token",response.data.token)
+            this.toAes.set("photoUrl",response.data.result.photoUrl)
+
+            // 存储
+            localStorage.setItem("username", response.data.result.userName);
+            localStorage.setItem("userid", response.data.result.id);
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("photoUrl", response.data.result.photoUrl);
+
+            /*获取权限*/
+            let authmap = {}
+            authmap = response.data.result.authmap
+            console.log(authmap)
+            let listMap = new Array()
+            for (var key in authmap) {
+              listMap.push(key.substring(23))
+            }
+            /*获取权限结束*/
+            /*权限   Localstorage存值开始*/
+            console.log(listMap)
+            localStorage.setItem("authmap", listMap);
+            this.toAes.set("authmap",listMap);
+
+            window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
+            this.toAes.set("listMenu",response.data.result.listMenuInfo);
+            /*权限   Localstorage存值结束*/
+            this.$router.push({path:'/view/shouye/shouye'});
+          }
+        }).catch((error)=>{
+          this.$notify.error({
+            title: '错误',
+            message: '出错了~_~，请联系管理员！'
+          });
+        })
+      },
       submitForm(ruleid){
 
         let code=this.$refs.coderef.value;
@@ -177,6 +291,10 @@
               window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
               this.toAes.set("listMenu",response.data.result.listMenuInfo);
               /*权限   Localstorage存值结束*/
+              this.$message({
+                message: '恭喜你,角色切换成功...',
+                type: 'success'
+              });
               this.$router.push({path:'/view/shouye/shouye'});
 
             }else if(respo.error!=null){
@@ -192,7 +310,6 @@
                 message: respo.error
               });
             }
-
           }).catch((error)=>{
             //关闭加载窗
             this.$data.percent=100;
@@ -205,10 +322,7 @@
               message: '出错了~_~，请联系管理员！'
             });
           })
-
-
         }
-
       },
       //拖动验证start
       getOffset(box,direction){

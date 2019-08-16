@@ -64,6 +64,17 @@
             <span style="font-weight:bold">操作帮助</span>
             <div style="text-align: center"><span>使用蛟龙快速组织信息</span></div>
           </div>
+
+          <!--折线图开始-->
+          <div  slot="header" class="clearfix">
+            <hr style="color: #d9e8ff;">
+            <span style="font-weight:bold;">最近登录折线图</span><br>
+            <div id="main" style="width: 95%;height: 400px;">
+
+            </div>
+          </div>
+          <!--折线图结束-->
+
           <div class="text item">
                 <div style="margin-left:50px;float:left;height:100px">
                   <el-tooltip content="点击创库" placement="top" effect="light">
@@ -104,7 +115,6 @@
                     </el-tooltip>
                   </el-badge>
 
-
                 </div>
             </div>
         </el-card>
@@ -113,16 +123,72 @@
 </template>
 
 <script>
+  import echarts from 'echarts'
     export default {
-        name: "system",
-        data(){
-          return{
-            closable:false,
-            styleel:{
-              left:'200%'
-            },
-          }
+      name: "system",
+      data(){
+        return{
+          charts: '',
+          xAxisData: ["1","2","3","4","5"],
+          opinionData: ["3", "2", "4", "4", "5"],
+          closable:false,
+          styleel:{
+            left:'200%'
+          },
         }
+      },
+      methods: {
+        getxLineData(){
+          this.$axios.post().then((response)=>{
+
+          })
+        },
+        drawLine(id) {        //折线图方法
+          this.charts = echarts.init(document.getElementById(id))
+          this.charts.setOption({
+            tooltip: {
+              trigger: 'axis'
+            },
+            legend: {
+              data: ['近七日登陆信息']
+            },
+            grid: {
+              left: '3%',
+              right: '4%',
+              bottom: '3%',
+              containLabel: true
+            },
+
+            toolbox: {
+              feature: {
+                saveAsImage: {}
+              }
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: this.xAxisData
+
+            },
+            yAxis: {
+              type: 'value'
+            },
+
+            series: [{
+              name: '近七日登陆信息',
+              type: 'line',
+              stack: '总量',
+              data: this.opinionData
+            }]
+          })
+        }
+      },
+      //调用
+      mounted() {
+        this.$nextTick(function() {
+          this.drawLine('main')
+        })
+      }
     }
 </script>
 
@@ -144,5 +210,11 @@
 
   .box-card {
     width:99.5%;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 </style>

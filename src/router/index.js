@@ -3,6 +3,7 @@ import Router from 'vue-router'
 //import HelloWorld from '@/components/HelloWorld'
 
 import login from '@/view/login/login'
+import phoneLogin from '@/view/login/phoneLogin'
 import shouye from '@/view/shouye/shouye'
 import datamenu from '@/view/shouye/datamenu'
 import datamain from '@/view/shouye/datamain'
@@ -21,6 +22,14 @@ export default new Router({
       path: '/',
       name: 'login',
       component: login,
+      meta:{
+        require: false
+      }
+    },
+    {
+      path: '/',
+      name: 'phoneLogin',
+      component: phoneLogin,
       meta:{
         require: false
       }

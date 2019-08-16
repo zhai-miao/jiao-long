@@ -20,11 +20,24 @@
           <el-form-item>
             <el-button type="primary" @click="addUser" style="margin-right: -150px" v-if="authmap.includes('addUser')">添加</el-button>
             <el-button type="primary" @click="delAll" style="margin-left: 150px">批删</el-button>
-            <el-button type="primary" @click="downloadExcel" style="margin-left: 150px">数据导出</el-button>
+            <!--<el-button type="primary" @click="downloadExcel" style="margin-left: 10px">前台导出</el-button>-->
+            <el-button type="primary" @click="downloadExcel02" style="margin-left: 10px">后台导出</el-button>
+            <div style="float: right;margin-left: 10px">
+              <el-upload
+                class="upload-demo"
+                action="http://localhost:10000/api/server/dowloudExcel"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :before-remove="beforeRemove"
+                multiple
+                :limit="3"
+                :on-exceed="handleExceed">
+                <el-button size="primary" type="primary">批量上传</el-button>
+              </el-upload>
+            </div>
           </el-form-item>
         </el-form>
       </div>
-
       <el-table
         ref="multipleTable"
         :data="userData"
@@ -559,7 +572,44 @@
           }
           return isJPG && isLt2M;
         },
-        //列表下载
+
+
+        handleRemove(file, fileList) {
+          console.log(file, fileList);
+        },
+        handlePreview(file) {
+          console.log(file);
+        },
+        handleExceed(files, fileList) {
+          this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+        },
+        beforeRemove(file, fileList) {
+          return this.$confirm(`确定移除 ${ file.name }？`);
+        },
+
+      downloadExcel02(){    //后台方式列表下载
+        let mypage = {}
+        mypage.pageSize = this.pageSize
+        mypage.currentPage = this.currentPage
+        this.$axios.post(this.domain.serverpath+"writeOutExecel",mypage).then((response)=>{
+          if(response.data.code == 200){
+            this.$message({
+              message: response.data.success,
+              type: 'success'
+            });
+          }else {
+            this.$message.error('对不起,导出失败失败...');
+          }
+        }).catch((error)=>{
+            this.$message({
+              message: '对不起,您没有相关权限...',
+              type: 'error',
+              duration: 3000
+            });
+        })
+      },
+
+        //前台方式列表下载
         downloadExcel() {
           this.$confirm('确定下载列表文件?', '提示', {
             confirmButtonText: '确定',
@@ -573,7 +623,7 @@
           });
         },
         //数据写入excel
-        export2Excel() {
+        /*export2Excel() {
           var that = this;
           require.ensure([], () => {
             const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
@@ -588,7 +638,7 @@
         //格式转换，直接复制即可
         formatJson(filterVal, jsonData) {
           return jsonData.map(v => filterVal.map(j => v[j]))
-        },
+        },*/
       }
     }
 </script>

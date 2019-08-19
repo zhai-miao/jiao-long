@@ -221,7 +221,7 @@
             localStorage.clear();   //全清localStorage
             this.domain.userInfo = {}
             this.domain.token = ""
-            this.$router.push({path:'/login'});
+            this.$router.push({path:'/'});
           }else{
             alert("退出登陆失败...")
           }

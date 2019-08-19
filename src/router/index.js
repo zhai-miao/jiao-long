@@ -11,6 +11,8 @@ import system from '@/view/shouye/system'
 import userList from '@/view/user/userList'
 import roleList from '@/view/role/roleList'
 import menuList from '@/view/menu/menuList'
+import email from '@/view/login/email'
+import reset from '@/view/login/reset'
 
 Vue.use(Router)
 
@@ -33,6 +35,16 @@ export default new Router({
       meta:{
         require: false
       }
+    },
+    {
+      path: '/email',
+      name: 'email',
+      component: email,
+    },
+    {
+      path: '/reset',
+      name: 'reset',
+      component: reset,
     },
     {
       path: '/view/shouye/shouye',

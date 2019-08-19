@@ -36,6 +36,7 @@
 
             <el-form-item>
               <el-checkbox style="color: darkmagenta" checked>默认七天免登陆</el-checkbox>
+              <a style="color: #d16c83;margin-left: 100px" @click="activeName='three'"><span>找回密码</span></a>
             </el-form-item>
 
 
@@ -51,7 +52,7 @@
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="手机号登陆" name="second">
-          <el-form :model="form" status-icon :rules="rules" ref="form">
+          <el-form :model="form" status-icon :rules="rules" ref="form" label-width="0px" class="ms-content">
             <el-form-item prop="tel" :label-width="formLabelWidth" style="margin-left: 80px;margin-top: 15px">
               <el-input v-model.number="form.tel" autocomplete="off" style="column-width: 550px;" placeholder="请输入正确的手机号码"></el-input>
             </el-form-item>
@@ -66,6 +67,34 @@
               <el-button type="primary" @click="loginByPhone" style="width: 300px">登录</el-button>
             </div>
 
+          </el-form>
+        </el-tab-pane>
+
+        <el-tab-pane label="找回密码" name="three">
+          <el-form :model="form" status-icon :rules="rules" ref="form"  label-width="0px" class="ms-content">
+            <el-form-item prop="loginName">
+              <el-input v-model="form.loginName" placeholder="请输入登陆名">
+                <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="email">
+              <el-input v-model="form.email" placeholder="请输入绑定邮箱">
+                <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="emailYanZhengMa" :label-width="formLabelWidth" style="margin-left: 80px;">
+              <span v-show="sendAuthCode02" class="auth_text auth_text_blue" @click="getEmailCode">
+                <el-button style="margin-left: 35px;margin-top: -155px">发送验证码</el-button>
+              </span>
+              <span v-show="!sendAuthCode02" class="auth_text">
+                <!--<el-input v-model.number="form.emailYanZhengMa" autocomplete="off" style="column-width: 800px;" placeholder="请输入6位数字验证码"></el-input>-->
+                <span class="auth_text_blue" style="color: crimson;"><span>{{auth_time02}} </span> 秒之后重新发送验证码</span>
+                <!--<span style="color: crimson;">请到邮箱内点击链接后进行相关密码修改操作</span>-->
+                <!--<el-input v-model.number="form.newPwd" autocomplete="off" style="column-width: 800px;" placeholder="请输入新的密码"></el-input>
+                <el-button @click="CutPwd">确定更换密码</el-button>-->
+              </span>
+
+            </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
@@ -112,13 +141,19 @@
           username:'zhangsan',
           password:'123456'
         },
-        sendAuthCode: true,
+        sendAuthCode: true,   //手机验证的验证
+        sendAuthCode02: true, //邮箱验证
         form: {
           tel: '13027674090',
           yanZhengMa: '',
+          emailYanZhengMa: '',
+          loginName: 'zhangsan',
+          email: '565663762@qq.com',
+          newPwd: '',
           delivery: false
         },
         auth_time: '',
+        auth_time02: '',
         rules: {
           username: [
             { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -148,6 +183,53 @@
           }, 1000);
         }
       )},
+      getEmailCode(){
+        let emailMap={email:this.form.email,loginName:this.form.loginName}
+        this.$axios.post(this.domain.ssoserverpath+"sendEmailMessage",emailMap).then((response)=> {
+          if(response.data.code == 200){
+            this.$notify.info({
+              title: '消息',
+              message: '请到邮箱内点击链接后进行相关密码修改操作'
+            });
+            this.sendAuthCode02 = false
+            //设置倒计时秒
+            this.auth_time02 = 60;
+            var auth_timetimer = setInterval(()=>{
+              this.auth_time02--;
+              if(this.auth_time02<=0){
+                this.sendAuthCode02 = true;
+                clearInterval(auth_timetimer);
+              }
+            }, 1000);
+          }else if(response.data.code == 205){
+            alert(response.data.success)
+          }else if(response.data.code == 300){
+            alert(response.data.error)
+          }
+          }
+        )
+      },
+      CutPwd(){
+        let mypage = {newPwd:this.form.newPwd,emailYanZhengMa:this.form.emailYanZhengMa,loginName:this.form.loginName}
+        this.$axios.post(this.domain.ssoserverpath+"checkedEmailVerifyCode",mypage).then((response)=>{
+          if(response.data.code==200){
+            this.$message({
+              message: response.data.success,
+              type: 'success'
+            });
+          }else if(response.data.code==445){
+            this.$message({
+              message: response.data.error,
+              type: 'success'
+            });
+          }else if(response.data.code==444){
+            this.$message({
+              message: response.data.error,
+              type: 'success'
+            });
+          }
+        })
+      },
       loginByPhone(){
         let phoneMap={tel:this.form.tel,yanZhengMa:this.form.yanZhengMa}
         this.$axios.post(this.domain.ssoserverpath+"checkedPhoneMessage",phoneMap).then((response)=> {

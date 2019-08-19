@@ -104,7 +104,8 @@
       },
       methods:{
         getMenuList(){
-          this.$axios.post(this.domain.serverpath+"getMenuList").then((response)=>{
+          let mypage = {userid:this.toAes.get("userid")}
+          this.$axios.post(this.domain.serverpath+"getMenuList",mypage).then((response)=>{
             this.menuInfoList = response.data;
           });
         },

@@ -129,8 +129,8 @@
       data(){
         return{
           charts: '',
-          xAxisData: ["1","2","3","4","5"],
-          opinionData: ["3", "2", "4", "4", "5"],
+          xAxisData: [],
+          opinionData: [],
           closable:false,
           styleel:{
             left:'200%'
@@ -139,11 +139,20 @@
       },
       methods: {
         getxLineData(){
-          this.$axios.post().then((response)=>{
+          let mypage = {}
+          mypage.userId = this.toAes.get("userid")
+          this.$axios.post(this.domain.ssoserverpath+"getxLineData",mypage).then((response)=>{
 
+            this.xAxisData = response.data.arrDate
+            this.opinionData = response.data.arrNum
+            this.$nextTick(function() {
+              this.drawLine('main')
+            })
           })
         },
-        drawLine(id) {        //折线图方法
+        drawLine(id) {
+          console.log(this.xAxisData)
+          console.log(this.opinionData)//折线图方法
           this.charts = echarts.init(document.getElementById(id))
           this.charts.setOption({
             tooltip: {
@@ -167,7 +176,7 @@
             xAxis: {
               type: 'category',
               boundaryGap: false,
-              data: this.xAxisData
+              data: this.xAxisData.reverse()
 
             },
             yAxis: {
@@ -178,16 +187,14 @@
               name: '近七日登陆信息',
               type: 'line',
               stack: '总量',
-              data: this.opinionData
+              data: this.opinionData.reverse()
             }]
           })
         }
       },
       //调用
       mounted() {
-        this.$nextTick(function() {
-          this.drawLine('main')
-        })
+        this.getxLineData();
       }
     }
 </script>
